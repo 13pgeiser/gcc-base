@@ -211,7 +211,7 @@ build_toolchain() {
 	export PATH="$PREFIX/bin:$PATH"
 	build_prerequisites "$1"
 	BASE_NO_SYSROOT_OPTIONS="--host=$1 --disable-nls --enable-static --with-gmp=$SYSROOT --with-mpfr=$SYSROOT --with-mpc=$SYSROOT --with-isl=$SYSROOT --prefix=$PREFIX --target=$2"
-	BASE_OPTIONS="$BASE_NO_SYSROOT_OPTIONS --with-sysroot=$SYSROOT"
+	BASE_OPTIONS="$BASE_NO_SYSROOT_OPTIONS --with-sysroot=$SYSROOT --with-gnu-as --with-gnu-ld"
 	NEWLIB_OPTIONS="$BASE_OPTIONS --disable-newlib-supplied-syscalls --enable-newlib-io-long-long --enable-newlib-io-c99-formats --enable-newlib-mb --enable-newlib-reent-check-verify"
 	NEWLIB_NANO_OPTIONS="$BASE_OPTIONS --prefix=$SYSROOT/nano --disable-newlib-supplied-syscalls --enable-newlib-nano-malloc --disable-newlib-unbuf-stream-opt --enable-newlib-reent-small --disable-newlib-fseek-optimization --enable-newlib-nano-formatted-io --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --enable-lite-exit --enable-newlib-global-atexit --enable-newlib-reent-check-verify"
 	case "$2" in
