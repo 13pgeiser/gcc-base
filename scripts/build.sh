@@ -45,7 +45,7 @@ download() {
 	fi
 	if [ ! -e "isl-${ISL_VERSION}" ]; then
 		#$DOWNLOAD http://isl.gforge.inria.fr/isl-${ISL_VERSION}.tar.xz
-		$DOWNLOAD https://mirrors.slackware.com/slackware/slackware64-current/source/l/isl/isl-${ISL_VERSION}.tar.xz
+		$DOWNLOAD https://altushost-swe.dl.sourceforge.net/project/libisl/isl-${ISL_VERSION}.tar.xz
 		tar xJf "isl-${ISL_VERSION}.tar.xz"
 	fi
 	if [ ! -e "zlib-${ZLIB_VERSION}" ]; then
@@ -57,7 +57,7 @@ download() {
 	#~ tar xzf "zstd-${ZSTD_VERSION}.tar.gz"
 	#~ fi
 	if [ ! -e "binutils-${BINUTILS_VERSION}" ]; then
-		$DOWNLOAD http://ftpmirror.gnu.org/binutils/binutils-${BINUTILS_VERSION}.tar.xz
+		$DOWNLOAD https://ftpmirror.gnu.org/binutils/binutils-${BINUTILS_VERSION}.tar.xz
 		tar xJf "binutils-${BINUTILS_VERSION}.tar.xz"
 		if [ "$BINUTILS_VERSION" = "2.38" ]; then
 			(
@@ -68,12 +68,12 @@ download() {
 		fi
 	fi
 	if [ ! -e "gcc-${GCC_VERSION}" ]; then
-		$DOWNLOAD http://ftpmirror.gnu.org/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.xz
+		$DOWNLOAD https://ftpmirror.gnu.org/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.xz
 		tar xJf "gcc-${GCC_VERSION}.tar.xz"
 	fi
 
 	if [ ! -e "gdb-${GDB_VERSION}" ]; then
-		$DOWNLOAD http://ftpmirror.gnu.org/gdb/gdb-${GDB_VERSION}.tar.xz
+		$DOWNLOAD https://ftpmirror.gnu.org/gdb/gdb-${GDB_VERSION}.tar.xz
 		tar xJf "gdb-${GDB_VERSION}.tar.xz"
 	fi
 	if [ ! -e "expat-${EXPAT_VERSION}" ]; then
@@ -97,8 +97,11 @@ download_newlib() {
 	(
 		cd "$SRC_DIR"
 		if [ ! -e "newlib-${NEWLIB_VERSION}" ]; then
-			$DOWNLOAD "ftp://sourceware.org/pub/newlib/newlib-${NEWLIB_VERSION}.tar.gz"
-			tar xzf "newlib-${NEWLIB_VERSION}.tar.gz"
+			# $DOWNLOAD "ftp://sourceware.org/pub/newlib/newlib-${NEWLIB_VERSION}.tar.gz"
+		        # tar xzf "newlib-${NEWLIB_VERSION}.tar.gz"
+		        git clone https://sourceware.org/git/newlib-cygwin.git newlib-${NEWLIB_VERSION}
+		        cd newlib-${NEWLIB_VERSION}
+			git checkout newlib-snapshot-20211231
 		fi
 	)
 }
@@ -107,7 +110,7 @@ download_glibc() {
 	(
 		cd "$SRC_DIR"
 		if [ ! -e "glibc-${GLIBC_VERSION}" ]; then
-			$DOWNLOAD "http://ftp.gnu.org/gnu/glibc/glibc-${GLIBC_VERSION}.tar.xz"
+			$DOWNLOAD "https://ftp.gnu.org/gnu/glibc/glibc-${GLIBC_VERSION}.tar.xz"
 			tar xJf "glibc-${GLIBC_VERSION}.tar.xz"
 		fi
 	)
@@ -208,7 +211,7 @@ build_toolchain() {
 	export PATH="$PREFIX/bin:$PATH"
 	build_prerequisites "$1"
 	BASE_NO_SYSROOT_OPTIONS="--host=$1 --disable-nls --enable-static --with-gmp=$SYSROOT --with-mpfr=$SYSROOT --with-mpc=$SYSROOT --with-isl=$SYSROOT --prefix=$PREFIX --target=$2"
-	BASE_OPTIONS="$BASE_NO_SYSROOT_OPTIONS --with-sysroot=$SYSROOT"
+	BASE_OPTIONS="$BASE_NO_SYSROOT_OPTIONS --with-sysroot=$SYSROOT --with-gnu-as --with-gnu-ld"
 	NEWLIB_OPTIONS="$BASE_OPTIONS --disable-newlib-supplied-syscalls --enable-newlib-io-long-long --enable-newlib-io-c99-formats --enable-newlib-mb --enable-newlib-reent-check-verify"
 	NEWLIB_NANO_OPTIONS="$BASE_OPTIONS --prefix=$SYSROOT/nano --disable-newlib-supplied-syscalls --enable-newlib-nano-malloc --disable-newlib-unbuf-stream-opt --enable-newlib-reent-small --disable-newlib-fseek-optimization --enable-newlib-nano-formatted-io --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --enable-lite-exit --enable-newlib-global-atexit --enable-newlib-reent-check-verify"
 	case "$2" in
