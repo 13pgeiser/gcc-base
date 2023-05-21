@@ -13,9 +13,10 @@ GCC_VERSION=8.5.0
 GCC_VERSION=9.5.0
 GCC_VERSION=10.4.0
 GCC_VERSION=11.3.0
-GCC_VERSION=12.2.0
+GCC_VERSION=12.3.0
 MINGW64_VERSION=9.0.0
-#MINGW64_VERSION=10.0.0 # Not yet working.
+#MINGW64_VERSION=10.0.0 # Not working.
+#MINGW64_VERSION=11.0.0
 GDB_VERSION=13.1
 EXPAT_VERSION=2.5.0
 NEWLIB_VERSION=4.3.0.20230120
@@ -353,16 +354,16 @@ build_toolchain() {
 	unset LOADLIBES
 }
 
-move_if_exists() {
+copy_if_exists() {
 	if [ -e "$1" ]; then
-		mv "$1" "$2"
+		cp "$1" "$2"
 	fi
 }
 
 finalize_x86_64_w64_mingw32() {
 	cd "$WRK_DIR"
-	move_if_exists "$1_$2-${GCC_VERSION}/x86_64-w64-mingw32/bin/libwinpthread-1.dll" "$1_$2-${GCC_VERSION}/bin"
-	move_if_exists "$1_$2-${GCC_VERSION}/lib/"*.dll "$1_$2-${GCC_VERSION}/bin"
+	copy_if_exists "$1_$2-${GCC_VERSION}/x86_64-w64-mingw32/bin/libwinpthread-1.dll" "$1_$2-${GCC_VERSION}/bin"
+	copy_if_exists "$1_$2-${GCC_VERSION}/lib/"*.dll "$1_$2-${GCC_VERSION}/bin"
 	cp -f "$1_$2_build/gcc/$2/libstdc++-v3/src/.libs/libstdc++-6.dll" "$1_$2-${GCC_VERSION}/bin"
 	cp -f "$1_$2_build/gcc/$2/32/libstdc++-v3/src/.libs/libstdc++-6.dll" "$1_$2-${GCC_VERSION}/lib32"
 }
