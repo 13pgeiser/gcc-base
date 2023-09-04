@@ -1,4 +1,3 @@
-#FROM debian:bullseye-slim
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -37,6 +36,7 @@ RUN set -ex \
 		linux-headers-generic \
 		libc6-dev \
 		gcc-multilib \
+		python3-dev \
 	&& apt-get clean \
 	&& rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
 
