@@ -48,3 +48,5 @@ RUN set -ex \
 		wine64 \
 	&& apt-get clean \
 	&& rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
+
+ENV WRK_DIR /workdir

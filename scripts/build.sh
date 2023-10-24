@@ -7,16 +7,15 @@ GMP_VERSION=6.3.0
 MPC_VERSION=1.3.1
 ISL_VERSION=0.26
 ZLIB_VERSION=1.3
-#ZSTD_VERSION=1.5.2
 BINUTILS_VERSION=2.41
+MINGW64_VERSION=9.0.0
 GCC_VERSION=8.5.0
 GCC_VERSION=9.5.0
 GCC_VERSION=10.5.0
 GCC_VERSION=11.4.0
 GCC_VERSION=12.3.0
-MINGW64_VERSION=9.0.0
-#MINGW64_VERSION=10.0.0 # Not working.
-#MINGW64_VERSION=11.0.0
+MINGW64_VERSION=11.0.1
+GCC_VERSION=13.2.0
 GDB_VERSION=13.2
 EXPAT_VERSION=2.5.0
 NEWLIB_VERSION=4.3.0.20230120
@@ -25,7 +24,6 @@ GLIBC_VERSION=2.37
 ROOT_DIR="$(pwd)"
 PATCH_DIR="$(pwd)/patches"
 SRC_DIR="$(pwd)/sources"
-WRK_DIR="$(pwd)/workdir"
 DOWNLOAD="curl  -O -J -L --retry 20"
 JOBS=$(($(nproc) * 2))
 #JOBS=1
@@ -53,10 +51,6 @@ download() {
 		$DOWNLOAD https://zlib.net/zlib-${ZLIB_VERSION}.tar.xz
 		tar xJf "zlib-${ZLIB_VERSION}.tar.xz"
 	fi
-	#~ if [ ! -e "zstd-${ZSTD_VERSION}" ]; then
-	#~ $DOWNLOAD https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz
-	#~ tar xzf "zstd-${ZSTD_VERSION}.tar.gz"
-	#~ fi
 	if [ ! -e "binutils-${BINUTILS_VERSION}" ]; then
 		$DOWNLOAD https://ftpmirror.gnu.org/binutils/binutils-${BINUTILS_VERSION}.tar.xz
 		tar xJf "binutils-${BINUTILS_VERSION}.tar.xz"
@@ -98,8 +92,6 @@ download_newlib() {
 	(
 		cd "$SRC_DIR"
 		if [ ! -e "newlib-${NEWLIB_VERSION}" ]; then
-			# $DOWNLOAD "ftp://sourceware.org/pub/newlib/newlib-${NEWLIB_VERSION}.tar.gz"
-		        # tar xzf "newlib-${NEWLIB_VERSION}.tar.gz"
 		        git clone https://sourceware.org/git/newlib-cygwin.git newlib-${NEWLIB_VERSION}
 		        cd newlib-${NEWLIB_VERSION}
 			git checkout newlib-snapshot-20211231
@@ -352,9 +344,20 @@ build_toolchain() {
 	build_package expat "$SRC_DIR/expat-${EXPAT_VERSION}" "$BINUTILS_OPTIONS"
 	GDB_OPTIONS="$BINUTILS_OPTIONS"
 	if [ "$1" = "$(gcc -dumpmachine)" ]; then
-		GDB_OPTIONS="$GDB_OPTIONS --with-python"
+		GDB_OPTIONS="$GDB_OPTIONS --with-python --with-system-gdbinit-dir=$WRK_DIR/$1_$2-${GCC_VERSION}/share/gdb/system-gdbinit"
 	fi
 	build_package gdb "$SRC_DIR/gdb-${GDB_VERSION}" "$GDB_OPTIONS"
+	rm -f $PREFIX/share/gdb/system-gdbinit/wrs-linux.py
+	rm -f $PREFIX/share/gdb/system-gdbinit/elinos.py
+	cat <<'EOF' > $PREFIX/share/gdb/system-gdbinit/libstdc++.py
+import glob
+import os
+import sys
+gcc_python_folder = os.path.abspath(glob.glob(os.path.join(os.path.dirname(__file__), '../../../share/gcc-*/python/'))[0])
+libstdcpp = os.path.abspath(glob.glob(os.path.join(os.path.dirname(__file__), '../../../lib64/debug/libstdc++.so.*-gdb.py'))[0])
+sys.path.append(gcc_python_folder)
+exec(open(libstdcpp).read())
+EOF
 	unset LOADLIBES
 }
 
@@ -378,22 +381,22 @@ test_x86_64_w64_mingw32() {
 
 	# Try c in 64 bits
 	export WINEPATH="$1_$2-${GCC_VERSION}/bin"
-	wine64 "$1_$2-${GCC_VERSION}/bin/gcc.exe" ../test/main.c -o main.exe -lz
+	wine64 "$1_$2-${GCC_VERSION}/bin/gcc.exe" /test/main.c -o main.exe -lz
 	file main.exe
 	wine64 main.exe
 
 	# Try c++ in 64 bits
-	wine64 "$1_$2-${GCC_VERSION}/bin/g++.exe" ../test/main.cpp -o main.exe
+	wine64 "$1_$2-${GCC_VERSION}/bin/g++.exe" /test/main.cpp -o main.exe
 	file main.exe
 	wine64 main.exe
 
 	# Try c in 32 bits
-	wine64 "$1_$2-${GCC_VERSION}/bin/gcc.exe" ../test/main.c -m32 -o main.exe -lz
+	wine64 "$1_$2-${GCC_VERSION}/bin/gcc.exe" /test/main.c -m32 -o main.exe -lz
 	file main.exe
 	wine64 main.exe
 
 	# Try c++ in 32 bits
-	wine64 "$1_$2-${GCC_VERSION}/bin/g++.exe" ../test/main.cpp -m32 -o main.32.exe
+	wine64 "$1_$2-${GCC_VERSION}/bin/g++.exe" /test/main.cpp -m32 -o main.32.exe
 	file main.32.exe
 	export WINEPATH="$1_$2-${GCC_VERSION}/lib32"
 	wine64 main.32.exe
@@ -444,10 +447,12 @@ build_full_toolchain() {
 	download
 
 	figlet "JOBS=$JOBS"
-
 	CFG_BUILD="$(gcc -dumpmachine)"
+	figlet "CFG_BUILD=$CFG_BUILD"
 	CFG_HOST="$1"
+	figlet "CFG_HOST=$CFG_HOST"
 	CFG_TARGET="$2"
+	figlet "CFG_TARGET=$CFG_TARGET"
 
 	# Build toolchain host -> target
 	if [ "$CFG_BUILD" != "$CFG_HOST" ]; then
