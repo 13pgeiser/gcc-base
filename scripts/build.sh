@@ -6,22 +6,13 @@ MPFR_VERSION=4.2.1
 GMP_VERSION=6.3.0
 MPC_VERSION=1.3.1
 ISL_VERSION=0.26
-ZLIB_VERSION=1.3
-BINUTILS_VERSION=2.41
-GCC_VERSION=8.5.0
-GCC_VERSION=9.5.0
-GCC_VERSION=10.5.0
-GCC_VERSION=11.4.0
-GCC_VERSION=12.3.0
+ZLIB_VERSION=1.3.1
+BINUTILS_VERSION=2.42
 GCC_VERSION=13.2.0
-MINGW64_VERSION=9.0.0
 MINGW64_VERSION=11.0.1
-GDB_VERSION=13.2
 GDB_VERSION=14.1
 EXPAT_VERSION=2.5.0
-#NEWLIB_VERSION=4.3.0.20230120
 NEWLIB_VERSION=4.4.0.20231231
-GLIBC_VERSION=2.37
 # Default folders
 ROOT_DIR="$(pwd)"
 PATCH_DIR="$(pwd)/patches"
@@ -29,6 +20,16 @@ SRC_DIR="$(pwd)/sources"
 DOWNLOAD="curl  -O -J -L --retry 20"
 JOBS=$(($(nproc) * 2))
 #JOBS=1
+
+codename="$(lsb_release -c -s)"
+if [ "$codename" == "bookworm" ]; then
+	GLIBC_VERSION=2.36 # Bookworm
+elif [ "$codename" == "jammy" ]; then
+	GLIBC_VERSION=2.35 # Jammy
+else
+	echo "Distribution is not supported"
+	exit 1
+fi
 
 download() {
 	cd "$SRC_DIR"

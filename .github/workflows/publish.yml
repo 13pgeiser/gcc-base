@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build
-      run: bash ./docker_build.sh
+      run: bash ./docker_build_mingw.sh
     - name: Create release
       uses: ncipollo/release-action@v1
       with:

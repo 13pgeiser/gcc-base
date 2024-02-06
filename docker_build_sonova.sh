@@ -2,7 +2,7 @@
 set -e
 source docker_build_helper.sh
 
-prepare_container
+prepare_container jammy
 
 BUILD="$(gcc -dumpmachine)"
 for TARGET in "x86_64-w64-mingw32" "arc-elf" "arm-none-eabi" "$BUILD"; do
@@ -13,7 +13,6 @@ for TARGET in "x86_64-w64-mingw32" "arc-elf" "arm-none-eabi" "$BUILD"; do
 		fi
 		echo "$HOST -> $TARGET"
 		docker exec -e WRK_DIR=/home/shannon/_tools -i gcc_multilib bash /scripts/build.sh "$HOST" "$TARGET"
-		docker cp gcc_multilib:/release ./
 	done
 done
 

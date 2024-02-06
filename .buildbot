@@ -1,3 +1,3 @@
 # Just call build.sh
-bash ./docker_build.sh
+bash ./docker_build_mingw.sh
 directory_upload release

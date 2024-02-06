@@ -3,7 +3,7 @@ set -e
 
 function prepare_container() {
 	docker rm -f gcc_multilib || true
-	docker build -t gcc_multilib ./scripts
+	cat "./scripts/Dockerfile.$1" "./scripts/Dockerfile.base" | docker build -t gcc_multilib -
 	docker run -d --name gcc_multilib gcc_multilib sleep 86400 # 24 hours...
 	docker cp patches gcc_multilib:/patches
 	docker cp scripts gcc_multilib:/scripts
