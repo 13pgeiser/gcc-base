@@ -1,10 +1,10 @@
-FROM ubuntu:22.04
+FROM debian:buster-slim
 
 RUN set -ex \
 	&& apt-get update \
 	&& apt-get dist-upgrade -y \
 	&& apt-get install -y \
-		linux-headers-generic \
+		linux-headers-amd64 \
 		libc6-dev \
 	&& apt-get clean \
 	&& rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*

@@ -22,7 +22,9 @@ JOBS=$(($(nproc) * 2))
 #JOBS=1
 
 codename="$(lsb_release -c -s)"
-if [ "$codename" == "bookworm" ]; then
+if [ "$codename" == "buster" ]; then
+	GLIBC_VERSION=2.28 # Buster
+elif [ "$codename" == "bookworm" ]; then
 	GLIBC_VERSION=2.36 # Bookworm
 elif [ "$codename" == "jammy" ]; then
 	GLIBC_VERSION=2.35 # Jammy

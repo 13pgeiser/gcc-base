@@ -25,8 +25,6 @@ RUN set -ex \
 		wget \
 		xz-utils \
 		zlib1g-dev \
-		linux-headers-generic \
-		libc6-dev \
 		gcc-multilib \
 		python3-dev \
 	&& apt-get clean \
