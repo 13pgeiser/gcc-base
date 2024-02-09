@@ -2,7 +2,7 @@
 set -e
 source docker_build_helper.sh
 
-prepare_container jammy
+prepare_container buster
 
 BUILD="$(gcc -dumpmachine)"
 for TARGET in "riscv32-unknown-elf" "m68k-elf"; do

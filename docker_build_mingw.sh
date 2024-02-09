@@ -2,7 +2,7 @@
 set -e
 source docker_build_helper.sh
 
-prepare_container bookworm
+prepare_container buster
 
 BUILD="$(gcc -dumpmachine)"
 TARGET="x86_64-w64-mingw32"
