@@ -365,6 +365,8 @@ sys.path.append(gcc_python_folder)
 exec(open(libstdcpp).read())
 EOF
 	unset LOADLIBES
+	rm -rf "$BUILD_DIR"
+	rm -rf "$SYSROOT"
 }
 
 copy_if_exists() {
