@@ -36,7 +36,8 @@ fi
 download() {
 	cd "$SRC_DIR"
 	if [ ! -e "gmp-${GMP_VERSION}" ]; then
-		$DOWNLOAD https://gmplib.org/download/gmp/gmp-${GMP_VERSION}.tar.lz
+		#$DOWNLOAD https://gmplib.org/download/gmp/gmp-${GMP_VERSION}.tar.lz
+		$DOWNLOAD https://ftp.gnu.org/gnu/gmp/gmp-${GMP_VERSION}.tar.lz
 		tar --lzip -xf "gmp-${GMP_VERSION}.tar.lz"
 	fi
 	if [ ! -e "mpfr-${MPFR_VERSION}" ]; then
