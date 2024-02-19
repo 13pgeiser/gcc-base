@@ -351,11 +351,11 @@ build_toolchain() {
 	fi
 	build_package expat "$SRC_DIR/expat-${EXPAT_VERSION}" "$BINUTILS_OPTIONS"
 	GDB_OPTIONS="$BINUTILS_OPTIONS"
-	if [ "$1" = "$(gcc -dumpmachine)" ]; then
-		GDB_OPTIONS="$GDB_OPTIONS $GDB_WITH_PYTHON --with-system-gdbinit-dir=$WRK_DIR/$1_$2-${GCC_VERSION}/share/gdb/system-gdbinit"
-	fi
-	build_package gdb "$SRC_DIR/gdb-${GDB_VERSION}" "$GDB_OPTIONS"
 	if [[ -n "$GDB_WITH_PYTHON" ]]; then
+		if [ "$1" = "$(gcc -dumpmachine)" ]; then
+			GDB_OPTIONS="$GDB_OPTIONS $GDB_WITH_PYTHON --with-system-gdbinit-dir=$WRK_DIR/$1_$2-${GCC_VERSION}/share/gdb/system-gdbinit"
+		fi
+		build_package gdb "$SRC_DIR/gdb-${GDB_VERSION}" "$GDB_OPTIONS"
 		rm -f $PREFIX/share/gdb/system-gdbinit/wrs-linux.py
 		rm -f $PREFIX/share/gdb/system-gdbinit/elinos.py
 		cat <<'EOF' > $PREFIX/share/gdb/system-gdbinit/libstdc++.py
@@ -367,6 +367,8 @@ libstdcpp = os.path.abspath(glob.glob(os.path.join(os.path.dirname(__file__), '.
 sys.path.append(gcc_python_folder)
 exec(open(libstdcpp).read())
 EOF
+	else
+		build_package gdb "$SRC_DIR/gdb-${GDB_VERSION}" "$GDB_OPTIONS --without-python"
 	fi
 	unset LOADLIBES
 	rm -rf "$BUILD_DIR"
