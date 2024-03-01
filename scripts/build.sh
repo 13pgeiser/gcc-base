@@ -199,6 +199,53 @@ build_prerequisites() {
 	fi
 }
 
+copy_if_exists() {
+	if [ -e "$1" ]; then
+		cp "$1" "$2"
+	fi
+}
+
+finalize_x86_64_w64_mingw32() {
+	cd "$WRK_DIR"
+	copy_if_exists "$1_$2-${GCC_VERSION}/x86_64-w64-mingw32/bin/libwinpthread-1.dll" "$1_$2-${GCC_VERSION}/bin"
+	copy_if_exists "$1_$2-${GCC_VERSION}/lib/"*.dll "$1_$2-${GCC_VERSION}/bin"
+	cp -f "$1_$2_build/gcc/$2/libstdc++-v3/src/.libs/libstdc++-6.dll" "$1_$2-${GCC_VERSION}/bin"
+	cp -f "$1_$2_build/gcc/$2/32/libstdc++-v3/src/.libs/libstdc++-6.dll" "$1_$2-${GCC_VERSION}/lib32"
+}
+
+test_x86_64_w64_mingw32() {
+	cd "$WRK_DIR"
+	rm -f main.exe main.32.exe
+
+	# Try c in 64 bits
+	export WINEPATH="$1_$2-${GCC_VERSION}/bin"
+	wine64 "$1_$2-${GCC_VERSION}/bin/gcc.exe" /test/main.c -o main.exe -lz
+	file main.exe
+	wine64 main.exe
+
+	# Try c++ in 64 bits
+	wine64 "$1_$2-${GCC_VERSION}/bin/g++.exe" /test/main.cpp -o main.exe
+	file main.exe
+	wine64 main.exe
+
+	# Try c in 32 bits
+	wine64 "$1_$2-${GCC_VERSION}/bin/gcc.exe" /test/main.c -m32 -o main.exe -lz
+	file main.exe
+	wine64 main.exe
+
+	# Try c++ in 32 bits
+	wine64 "$1_$2-${GCC_VERSION}/bin/g++.exe" /test/main.cpp -m32 -o main.32.exe
+	file main.32.exe
+	export WINEPATH="$1_$2-${GCC_VERSION}/lib32"
+	wine64 main.32.exe
+
+	# Check gdb
+	wine64 "$1_$2-${GCC_VERSION}"/bin/gdb.exe --version
+
+	# Done.
+	rm -f main.exe main.32.exe
+}
+
 build_toolchain() {
 	figlet "$1" -w 140
 	figlet " -> "
@@ -371,55 +418,19 @@ EOF
 		build_package gdb "$SRC_DIR/gdb-${GDB_VERSION}" "$GDB_OPTIONS --without-python"
 	fi
 	unset LOADLIBES
+
+	if [ "$2" = "x86_64-w64-mingw32" ]; then
+		# Copy dlls
+		finalize_x86_64_w64_mingw32 "$1" "$2"
+
+		# Test
+		if [ "$1" = "x86_64-w64-mingw32" ]; then
+			test_x86_64_w64_mingw32 "$1" "$2"
+		fi
+	fi
+
 	rm -rf "$BUILD_DIR"
 	rm -rf "$SYSROOT"
-}
-
-copy_if_exists() {
-	if [ -e "$1" ]; then
-		cp "$1" "$2"
-	fi
-}
-
-finalize_x86_64_w64_mingw32() {
-	cd "$WRK_DIR"
-	copy_if_exists "$1_$2-${GCC_VERSION}/x86_64-w64-mingw32/bin/libwinpthread-1.dll" "$1_$2-${GCC_VERSION}/bin"
-	copy_if_exists "$1_$2-${GCC_VERSION}/lib/"*.dll "$1_$2-${GCC_VERSION}/bin"
-	cp -f "$1_$2_build/gcc/$2/libstdc++-v3/src/.libs/libstdc++-6.dll" "$1_$2-${GCC_VERSION}/bin"
-	cp -f "$1_$2_build/gcc/$2/32/libstdc++-v3/src/.libs/libstdc++-6.dll" "$1_$2-${GCC_VERSION}/lib32"
-}
-
-test_x86_64_w64_mingw32() {
-	cd "$WRK_DIR"
-	rm -f main.exe main.32.exe
-
-	# Try c in 64 bits
-	export WINEPATH="$1_$2-${GCC_VERSION}/bin"
-	wine64 "$1_$2-${GCC_VERSION}/bin/gcc.exe" /test/main.c -o main.exe -lz
-	file main.exe
-	wine64 main.exe
-
-	# Try c++ in 64 bits
-	wine64 "$1_$2-${GCC_VERSION}/bin/g++.exe" /test/main.cpp -o main.exe
-	file main.exe
-	wine64 main.exe
-
-	# Try c in 32 bits
-	wine64 "$1_$2-${GCC_VERSION}/bin/gcc.exe" /test/main.c -m32 -o main.exe -lz
-	file main.exe
-	wine64 main.exe
-
-	# Try c++ in 32 bits
-	wine64 "$1_$2-${GCC_VERSION}/bin/g++.exe" /test/main.cpp -m32 -o main.32.exe
-	file main.32.exe
-	export WINEPATH="$1_$2-${GCC_VERSION}/lib32"
-	wine64 main.32.exe
-
-	# Check gdb
-	wine64 "$1_$2-${GCC_VERSION}"/bin/gdb.exe --version
-
-	# Done.
-	rm -f main.exe main.32.exe
 }
 
 create_archive() {
@@ -475,16 +486,6 @@ build_full_toolchain() {
 		build_toolchain "$CFG_HOST" "$CFG_TARGET"
 	else
 		build_toolchain "$CFG_HOST" "$CFG_TARGET"
-	fi
-
-	if [ "$CFG_TARGET" = "x86_64-w64-mingw32" ]; then
-		# Copy dlls
-		finalize_x86_64_w64_mingw32 "$CFG_HOST" "$CFG_TARGET"
-
-		# Test
-		if [ "$CFG_HOST" = "x86_64-w64-mingw32" ]; then
-			test_x86_64_w64_mingw32 "$CFG_HOST" "$CFG_TARGET"
-		fi
 	fi
 
 	create_archive "$CFG_HOST" "$CFG_TARGET"
