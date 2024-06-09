@@ -30,6 +30,8 @@ elif [ "$codename" == "bookworm" ]; then
 	GLIBC_VERSION=2.36 # Bookworm
 elif [ "$codename" == "jammy" ]; then
 	GLIBC_VERSION=2.35 # Jammy
+elif [ "$codename" == "noble" ]; then
+	GLIBC_VERSION=2.39 # Noble
 else
 	echo "Distribution is not supported"
 	exit 1
