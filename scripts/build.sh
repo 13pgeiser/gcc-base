@@ -12,7 +12,7 @@ GCC_VERSION=14.2.0
 MINGW64_VERSION=12.0.0
 GDB_VERSION=15.2
 EXPAT_VERSION=2.6.3
-NEWLIB_VERSION=4.4.0.20231231
+NEWLIB_VERSION=4.4.0
 # Default folders
 ROOT_DIR="$(pwd)"
 PATCH_DIR="$(pwd)/patches"
@@ -104,7 +104,9 @@ download_newlib() {
 		if [ ! -e "newlib-${NEWLIB_VERSION}" ]; then
 		        git clone https://sourceware.org/git/newlib-cygwin.git newlib-${NEWLIB_VERSION}
 		        cd newlib-${NEWLIB_VERSION}
-			git checkout newlib-snapshot-20211231
+		        if [ "${NEWLIB_VERSION}" != "master" ] && [ "${NEWLIB_VERSION}" != "main" ]; then
+				git checkout newlib-${NEWLIB_VERSION}
+			fi
 		fi
 	)
 }
