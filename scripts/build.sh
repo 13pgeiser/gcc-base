@@ -8,14 +8,14 @@ MPC_VERSION=1.3.1
 ISL_VERSION=0.27
 ZLIB_VERSION=1.3.1
 BINUTILS_VERSION=2.44
-GCC_VERSION=14.2.0
+GCC_VERSION=15.1.0
 MINGW64_VERSION=12.0.0
-GDB_VERSION=16.2
-EXPAT_VERSION=2.7.0
+GDB_VERSION=16.3
+EXPAT_VERSION=2.7.1
 NEWLIB_VERSION=4.5.0
 # Default folders
 ROOT_DIR="$(pwd)"
-PATCH_DIR="$(pwd)/patches"
+PATCH_DIR="$(pwd)/gcc-base/patches"
 SRC_DIR="$(pwd)/sources"
 DOWNLOAD="curl  -O -J -L --retry 20"
 JOBS=$(($(nproc) * 2))
@@ -40,9 +40,13 @@ fi
 download() {
 	cd "$SRC_DIR"
 	if [ ! -e "gmp-${GMP_VERSION}" ]; then
-		#$DOWNLOAD https://gmplib.org/download/gmp/gmp-${GMP_VERSION}.tar.lz
 		$DOWNLOAD https://ftp.gnu.org/gnu/gmp/gmp-${GMP_VERSION}.tar.lz
 		tar --lzip -xf "gmp-${GMP_VERSION}.tar.lz"
+		if [ "$GMP_VERSION" = "6.3.0" ]; then
+			# See https://gmplib.org/repo/gmp/rev/8e7bb4ae7a18
+			# GCC 15 switches to std=gnu23 which makes gmp configure fail.
+			sed -i 's/void g(){}/void g(int,t1 const*,t1,t2,t1 const*,int){}/' "gmp-${GMP_VERSION}/configure"
+		fi
 	fi
 	if [ ! -e "mpfr-${MPFR_VERSION}" ]; then
 		$DOWNLOAD https://www.mpfr.org/mpfr-current/mpfr-${MPFR_VERSION}.tar.xz
@@ -53,7 +57,6 @@ download() {
 		tar xzf "mpc-${MPC_VERSION}.tar.gz"
 	fi
 	if [ ! -e "isl-${ISL_VERSION}" ]; then
-		#$DOWNLOAD http://isl.gforge.inria.fr/isl-${ISL_VERSION}.tar.xz
 		$DOWNLOAD https://altushost-swe.dl.sourceforge.net/project/libisl/isl-${ISL_VERSION}.tar.xz
 		tar xJf "isl-${ISL_VERSION}.tar.xz"
 	fi
@@ -80,6 +83,12 @@ download() {
 	if [ ! -e "gdb-${GDB_VERSION}" ]; then
 		$DOWNLOAD https://ftpmirror.gnu.org/gdb/gdb-${GDB_VERSION}.tar.xz
 		tar xJf "gdb-${GDB_VERSION}.tar.xz"
+		if [ "$GDB_VERSION" = "16.3" ]; then
+			(
+				cd gdb-${GDB_VERSION}
+				patch -p1 <"$PATCH_DIR/0010-readline-tcap.h-Update-definitions-for-C23.patch"
+			)
+		fi
 	fi
 	if [ ! -e "expat-${EXPAT_VERSION}" ]; then
 		$DOWNLOAD "https://github.com/libexpat/libexpat/releases/download/R_${EXPAT_VERSION//./_}/expat-${EXPAT_VERSION}.tar.xz"
