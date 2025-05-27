@@ -15,7 +15,11 @@ EXPAT_VERSION=2.7.1
 NEWLIB_VERSION=4.5.0
 # Default folders
 ROOT_DIR="$(pwd)"
-PATCH_DIR="$(pwd)/gcc-base/patches"
+if [ -e "$(pwd)/gcc-base/patches"]; then
+	PATCH_DIR="$(pwd)/gcc-base/patches"
+else
+	PATCH_DIR="$(pwd)/patches"
+fi
 SRC_DIR="$(pwd)/sources"
 DOWNLOAD="curl  -O -J -L --retry 20"
 JOBS=$(($(nproc) * 2))
@@ -232,28 +236,28 @@ test_x86_64_w64_mingw32() {
 
 	# Try c in 64 bits
 	export WINEPATH="$1_$2-${GCC_VERSION}/bin"
-	wine64 "$1_$2-${GCC_VERSION}/bin/gcc.exe" /test/main.c -o main.exe -lz
+	wine "$1_$2-${GCC_VERSION}/bin/gcc.exe" /test/main.c -o main.exe -lz
 	file main.exe
-	wine64 main.exe
+	wine main.exe
 
 	# Try c++ in 64 bits
-	wine64 "$1_$2-${GCC_VERSION}/bin/g++.exe" /test/main.cpp -o main.exe
+	wine "$1_$2-${GCC_VERSION}/bin/g++.exe" /test/main.cpp -o main.exe
 	file main.exe
-	wine64 main.exe
+	wine main.exe
 
 	# Try c in 32 bits
-	wine64 "$1_$2-${GCC_VERSION}/bin/gcc.exe" /test/main.c -m32 -o main.exe -lz
+	wine "$1_$2-${GCC_VERSION}/bin/gcc.exe" /test/main.c -m32 -o main.exe -lz
 	file main.exe
-	wine64 main.exe
+	wine main.exe
 
 	# Try c++ in 32 bits
-	wine64 "$1_$2-${GCC_VERSION}/bin/g++.exe" /test/main.cpp -m32 -o main.32.exe
+	wine "$1_$2-${GCC_VERSION}/bin/g++.exe" /test/main.cpp -m32 -o main.32.exe
 	file main.32.exe
 	export WINEPATH="$1_$2-${GCC_VERSION}/lib32"
-	wine64 main.32.exe
+	wine main.32.exe
 
 	# Check gdb
-	wine64 "$1_$2-${GCC_VERSION}"/bin/gdb.exe --version
+	wine "$1_$2-${GCC_VERSION}"/bin/gdb.exe --version
 
 	# Done.
 	rm -f main.exe main.32.exe
@@ -263,6 +267,7 @@ build_toolchain() {
 	figlet "$1" -w 140
 	figlet " -> "
 	figlet "$2" -w 140
+
 	export BUILD_DIR="$WRK_DIR/$1_$2_build"
 	mkdir -p "$BUILD_DIR"
 	export SYSROOT="$WRK_DIR/$1_$2_sysroot"
@@ -270,6 +275,10 @@ build_toolchain() {
 	export PREFIX="$WRK_DIR/$1_$2-${GCC_VERSION}"
 	mkdir -p "$PREFIX"
 	export PATH="$PREFIX/bin:$PATH"
+	STAMP="$PREFIX/.stamp"
+	if [ -e "$STAMP" ]; then
+		return
+	fi
 	build_prerequisites "$1"
 	BASE_NO_SYSROOT_OPTIONS="--host=$1 --disable-nls --enable-static --with-gmp=$SYSROOT --with-mpfr=$SYSROOT --with-mpc=$SYSROOT --with-isl=$SYSROOT --prefix=$PREFIX --target=$2"
 	BASE_OPTIONS="$BASE_NO_SYSROOT_OPTIONS --with-sysroot=$SYSROOT --with-gnu-as --with-gnu-ld"
@@ -444,6 +453,7 @@ EOF
 
 	rm -rf "$BUILD_DIR"
 	rm -rf "$SYSROOT"
+	touch "$STAMP"
 }
 
 create_archive() {
@@ -473,6 +483,7 @@ EOF
 		mkdir -p "$(dirname "$archive")"
 		7za a -t7z -m0=lzma -mx=9 "$archive" "$folder"
 	fi
+
 }
 
 build_full_toolchain() {
