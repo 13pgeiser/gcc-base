@@ -15,10 +15,12 @@ EXPAT_VERSION=2.7.1
 NEWLIB_VERSION=4.5.0
 # Default folders
 ROOT_DIR="$(pwd)"
-if [ -e "$(pwd)/gcc-base/patches"]; then
-	PATCH_DIR="$(pwd)/gcc-base/patches"
+if [ -d "$ROOT_DIR/gcc-base/patches" ]; then
+	PATCH_DIR="$ROOT_DIR/gcc-base/patches"
+	TEST_DIR="$ROOT_DIR/gcc-base/test"
 else
-	PATCH_DIR="$(pwd)/patches"
+	PATCH_DIR="$ROOT_DIR/patches"
+	TEST_DIR="$ROOT_DIR/test"
 fi
 SRC_DIR="$(pwd)/sources"
 DOWNLOAD="curl  -O -J -L --retry 20"
@@ -236,22 +238,22 @@ test_x86_64_w64_mingw32() {
 
 	# Try c in 64 bits
 	export WINEPATH="$1_$2-${GCC_VERSION}/bin"
-	wine "$1_$2-${GCC_VERSION}/bin/gcc.exe" /test/main.c -o main.exe -lz
+	wine "$1_$2-${GCC_VERSION}/bin/gcc.exe" "$TEST_DIR/main.c" -o main.exe -lz
 	file main.exe
 	wine main.exe
 
 	# Try c++ in 64 bits
-	wine "$1_$2-${GCC_VERSION}/bin/g++.exe" /test/main.cpp -o main.exe
+	wine "$1_$2-${GCC_VERSION}/bin/g++.exe" "$TEST_DIR/main.cpp" -o main.exe
 	file main.exe
 	wine main.exe
 
 	# Try c in 32 bits
-	wine "$1_$2-${GCC_VERSION}/bin/gcc.exe" /test/main.c -m32 -o main.exe -lz
+	wine "$1_$2-${GCC_VERSION}/bin/gcc.exe" "$TEST_DIR/main.c" -m32 -o main.exe -lz
 	file main.exe
 	wine main.exe
 
 	# Try c++ in 32 bits
-	wine "$1_$2-${GCC_VERSION}/bin/g++.exe" /test/main.cpp -m32 -o main.32.exe
+	wine "$1_$2-${GCC_VERSION}/bin/g++.exe" "$TEST_DIR/main.cpp" -m32 -o main.32.exe
 	file main.32.exe
 	export WINEPATH="$1_$2-${GCC_VERSION}/lib32"
 	wine main.32.exe
