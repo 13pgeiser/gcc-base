@@ -1,0 +1,127 @@
+diff --git a/libgloss/m68k/cf-crt1.c b/libgloss/m68k/cf-crt1.c
+index 3f37ae90d..9be184991 100644
+--- a/libgloss/m68k/cf-crt1.c
++++ b/libgloss/m68k/cf-crt1.c
+@@ -14,6 +14,7 @@
+  */
+ 
+ #include <stdlib.h>
++#include <string.h>
+ 
+ extern const int __interrupt_vector[];
+ extern void __reset (void);
+diff --git a/libgloss/m68k/io.h b/libgloss/m68k/io.h
+index be947283e..5772522cf 100644
+--- a/libgloss/m68k/io.h
++++ b/libgloss/m68k/io.h
+@@ -140,6 +140,7 @@ extern void __hosted_from_gdb_stat (const struct gdb_stat *gs,
+ extern void __hosted_from_gdb_timeval (const struct gdb_timeval *gt,
+ 				       struct timeval *t);
+ extern int __hosted_from_gdb_errno (int32_t err);
++extern int __hosted(int32_t operate, uint32_t *args);
+ 
+ #else
+ #ifdef IO
+diff --git a/libgloss/m68k/leds.c b/libgloss/m68k/leds.c
+index b9112376d..8b9210d74 100644
+--- a/libgloss/m68k/leds.c
++++ b/libgloss/m68k/leds.c
+@@ -15,6 +15,8 @@
+  */
+ #include "leds.h"
+ 
++void delay(int);
++
+ /*
+  * led_putnum -- print a hex number on the LED. the value of num must be a char with
+  *              the ascii value. ie... number 0 is '0', a is 'a', ' ' (null) clears
+diff --git a/libgloss/m68k/mc68ec.c b/libgloss/m68k/mc68ec.c
+index 76e737fe7..8578f1e93 100644
+--- a/libgloss/m68k/mc68ec.c
++++ b/libgloss/m68k/mc68ec.c
+@@ -25,7 +25,7 @@
+  *          prompt. It can be restarted from there.
+  */
+ void
+-_exit (int_status)
++_exit (int)
+ {
+   /* Use `i' constraint to get proper immediate-operand syntax for
+      target assembler configuration.  */
+diff --git a/libgloss/m68k/sim-abort.c b/libgloss/m68k/sim-abort.c
+index 4960de8f8..857e36231 100644
+--- a/libgloss/m68k/sim-abort.c
++++ b/libgloss/m68k/sim-abort.c
+@@ -13,6 +13,9 @@
+  * the new terms are clearly indicated on the first page of each file where
+  * they apply.
+  */
++#include <stdlib.h>
++
++extern int write(int fd, const void *buf, unsigned int count);
+ 
+ void abort(void)
+ {
+diff --git a/libgloss/m68k/sim-funcs.c b/libgloss/m68k/sim-funcs.c
+index 712c566b2..13aa2a4e6 100644
+--- a/libgloss/m68k/sim-funcs.c
++++ b/libgloss/m68k/sim-funcs.c
+@@ -12,6 +12,7 @@
+  * the new terms are clearly indicated on the first page of each file where
+  * they apply.
+  */
++#include <stdlib.h>
+ 
+ #define _XOPEN_SOURCE
+ #include <unistd.h>
+diff --git a/libgloss/m68k/sim-inbyte.c b/libgloss/m68k/sim-inbyte.c
+index 3fa3f2474..40fbd1991 100644
+--- a/libgloss/m68k/sim-inbyte.c
++++ b/libgloss/m68k/sim-inbyte.c
+@@ -14,6 +14,8 @@
+  * they apply.
+  */
+ 
++extern int read(int file, char *ptr, int len);
++
+ int
+ inbyte ()
+ {
+diff --git a/libgloss/m68k/sim-print.c b/libgloss/m68k/sim-print.c
+index 18ca02261..aa1705b33 100644
+--- a/libgloss/m68k/sim-print.c
++++ b/libgloss/m68k/sim-print.c
+@@ -12,6 +12,7 @@
+  * the new terms are clearly indicated on the first page of each file where
+  * they apply.
+  */
++extern int write(int fd, const void *buf, unsigned int count);
+ 
+ /*
+  * print -- do a raw print of a string
+diff --git a/libgloss/m68k/sim-sbrk.c b/libgloss/m68k/sim-sbrk.c
+index 83e5287eb..28e6b6fc3 100644
+--- a/libgloss/m68k/sim-sbrk.c
++++ b/libgloss/m68k/sim-sbrk.c
+@@ -13,6 +13,7 @@
+  * the new terms are clearly indicated on the first page of each file where
+  * they apply.
+  */
++extern int brk(void *addr);
+ 
+ extern char _end[];
+ static char *curbrk = _end;
+diff --git a/newlib/libc/stdlib/system.c b/newlib/libc/stdlib/system.c
+index f30b7df80..d086f9edc 100644
+--- a/newlib/libc/stdlib/system.c
++++ b/newlib/libc/stdlib/system.c
+@@ -56,6 +56,9 @@ Supporting OS subroutines required: <<_exit>>, <<_execve>>, <<_fork_r>>,
+ static int do_system (struct _reent *ptr, const char *s);
+ #endif
+ 
++/* Forward prototypes.  */
++int _system (const char *);
++
+ int
+ _system_r (struct _reent *ptr,
+      const char *s)

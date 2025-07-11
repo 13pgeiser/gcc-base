@@ -122,6 +122,7 @@ download_newlib() {
 		        if [ "${NEWLIB_VERSION}" != "master" ] && [ "${NEWLIB_VERSION}" != "main" ]; then
 				git checkout newlib-${NEWLIB_VERSION}
 			fi
+			patch -p1 <"$PATCH_DIR/newlib-m68k.patch"
 		fi
 	)
 }
