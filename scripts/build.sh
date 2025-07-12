@@ -16,13 +16,13 @@ NEWLIB_VERSION=4.5.0
 # Default folders
 ROOT_DIR="$(pwd)"
 if [ -d "$ROOT_DIR/gcc-base/patches" ]; then
-	PATCH_DIR="$ROOT_DIR/gcc-base/patches"
-	TEST_DIR="$ROOT_DIR/gcc-base/test"
+	PATCH_DIR="$(realpath "$ROOT_DIR/gcc-base/patches")"
+	TEST_DIR="$(realpath "$ROOT_DIR/gcc-base/test")"
 else
-	PATCH_DIR="$ROOT_DIR/patches"
-	TEST_DIR="$ROOT_DIR/test"
+	PATCH_DIR="$(realpath "$ROOT_DIR/patches")"
+	TEST_DIR="$(realpath "$ROOT_DIR/test")"
 fi
-SRC_DIR="$(pwd)/sources"
+SRC_DIR="$(realpath "$(pwd)/sources")"
 DOWNLOAD="curl  -O -J -L --retry 20"
 JOBS=$(($(nproc) * 2))
 #JOBS=1
