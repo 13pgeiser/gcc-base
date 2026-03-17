@@ -6,13 +6,14 @@ MPFR_VERSION=4.2.2
 GMP_VERSION=6.3.0
 MPC_VERSION=1.3.1
 ISL_VERSION=0.27
-ZLIB_VERSION=1.3.1
-BINUTILS_VERSION=2.44
-GCC_VERSION=15.1.0
-MINGW64_VERSION=12.0.0
-GDB_VERSION=16.3
-EXPAT_VERSION=2.7.1
-NEWLIB_VERSION=4.5.0
+ZLIB_VERSION=1.3.2
+BINUTILS_VERSION=2.46.0
+GCC_VERSION=15.2.0
+MINGW64_VERSION=13.0.0
+GDB_VERSION=17.1
+EXPAT_VERSION=2.7.4
+NEWLIB_VERSION=4.6.0
+
 # Default folders
 ROOT_DIR="$(pwd)"
 if [ -d "$ROOT_DIR/gcc-base/patches" ]; then
@@ -38,6 +39,8 @@ elif [ "$codename" == "jammy" ]; then
 	GLIBC_VERSION=2.35 # Jammy
 elif [ "$codename" == "noble" ]; then
 	GLIBC_VERSION=2.39 # Noble
+elif [ "$codename" == "trixie" ]; then
+	GLIBC_VERSION=2.41 # Trixie
 else
 	echo "Distribution is not supported"
 	exit 1
@@ -51,7 +54,8 @@ download() {
 		if [ "$GMP_VERSION" = "6.3.0" ]; then
 			# See https://gmplib.org/repo/gmp/rev/8e7bb4ae7a18
 			# GCC 15 switches to std=gnu23 which makes gmp configure fail.
-			sed -i 's/void g(){}/void g(int,t1 const*,t1,t2,t1 const*,int){}/' "gmp-${GMP_VERSION}/configure"
+			sed -i 's/void g(){}/void g(int a,t1 const* b,t1 c,t2 d,t1 const* e,int f){}/' "gmp-${GMP_VERSION}/configure"
+			echo "ok"
 		fi
 	fi
 	if [ ! -e "mpfr-${MPFR_VERSION}" ]; then
@@ -71,7 +75,7 @@ download() {
 		tar xJf "zlib-${ZLIB_VERSION}.tar.xz"
 	fi
 	if [ ! -e "binutils-${BINUTILS_VERSION}" ]; then
-		$DOWNLOAD https://ftpmirror.gnu.org/binutils/binutils-${BINUTILS_VERSION}.tar.xz
+		$DOWNLOAD https://sourceware.org/pub/binutils/releases/binutils-${BINUTILS_VERSION}.tar.xz
 		tar xJf "binutils-${BINUTILS_VERSION}.tar.xz"
 		if [ "$BINUTILS_VERSION" = "2.38" ]; then
 			(
