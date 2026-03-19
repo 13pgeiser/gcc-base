@@ -123,10 +123,12 @@ download_newlib() {
 		if [ ! -e "newlib-${NEWLIB_VERSION}" ]; then
 		        git clone https://sourceware.org/git/newlib-cygwin.git newlib-${NEWLIB_VERSION}
 		        cd newlib-${NEWLIB_VERSION}
-		        if [ "${NEWLIB_VERSION}" != "master" ] && [ "${NEWLIB_VERSION}" != "main" ]; then
+		    if [ "${NEWLIB_VERSION}" != "master" ] && [ "${NEWLIB_VERSION}" != "main" ]; then
 				git checkout newlib-${NEWLIB_VERSION}
 			fi
-			patch -p1 <"$PATCH_DIR/newlib-m68k.patch"
+			if [ "${NEWLIB_VERSION}" == "4.5.0" ]; then
+				patch -p1 <"$PATCH_DIR/newlib-m68k.patch"
+			fi
 		fi
 	)
 }
