@@ -4,15 +4,16 @@ set -ex
 # Package versions
 MPFR_VERSION=4.2.2
 GMP_VERSION=6.3.0
-MPC_VERSION=1.3.1
+MPC_VERSION=1.4.1
 ISL_VERSION=0.27
 ZLIB_VERSION=1.3.2
 BINUTILS_VERSION=2.46.0
-GCC_VERSION=15.2.0
-MINGW64_VERSION=13.0.0
-GDB_VERSION=17.1
-EXPAT_VERSION=2.7.4
+GCC_VERSION=16.1.0
+MINGW64_VERSION=14.0.0
+GDB_VERSION=17.2
+EXPAT_VERSION=2.8.1
 NEWLIB_VERSION=4.6.0
+
 
 # Default folders
 ROOT_DIR="$(pwd)"
@@ -63,8 +64,13 @@ download() {
 		tar xJf "mpfr-${MPFR_VERSION}.tar.xz"
 	fi
 	if [ ! -e "mpc-${MPC_VERSION}" ]; then
-		$DOWNLOAD https://ftp.gnu.org/gnu/mpc/mpc-${MPC_VERSION}.tar.gz
-		tar xzf "mpc-${MPC_VERSION}.tar.gz"
+		if [ "$(printf '%s\n%s' "1.4.0" "$MPC_VERSION" | sort -V | head -n1)" != "1.4.0" ]; then
+				$DOWNLOAD https://ftp.gnu.org/gnu/mpc/mpc-${MPC_VERSION}.tar.gz
+				tar xzf "mpc-${MPC_VERSION}.tar.gz"
+		else
+				$DOWNLOAD https://ftp.gnu.org/gnu/mpc/mpc-${MPC_VERSION}.tar.xz
+				tar xJf "mpc-${MPC_VERSION}.tar.xz"
+		fi
 	fi
 	if [ ! -e "isl-${ISL_VERSION}" ]; then
 		$DOWNLOAD https://altushost-swe.dl.sourceforge.net/project/libisl/isl-${ISL_VERSION}.tar.xz
